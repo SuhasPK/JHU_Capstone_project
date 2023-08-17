@@ -42,7 +42,7 @@ This is the training dataset that I will be using for the basic exercises of thi
 
 [Download here](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip)
 
-## Game Plan
+## Game Plan 
 
 ### Libraries
 
@@ -196,6 +196,7 @@ do.call(grid.arrange, c(plotList, list(ncol = 1)))
 rm(plot1, plot2, plot3)
 ```
 
+### Sampling and cleaning.
 ```{r sampling and cleaning, message=FALSE}
 set.seed(20042)
 
@@ -227,6 +228,84 @@ close(con)
 # number of lines and words in the sample data set.
 sample_data_lines <- length(sample_data)
 sample_data_words <- sum(stri_count_words(sample_data))
+
+```
+
+### Profanity dataset.
+
+- For **profanity check** I downloaded a .csv file from **Kaggle** [Profanities in English](https://www.kaggle.com/datasets/konradb/profanities-in-english-collection). 
+- The downloaded data set is in csv format. So I changed it to a text format so all data set are in same format.
+- It is saved as 'en_US.profanity.txt' .
+
+### Building Corpus
+
+```{r corpus, message=FALSE, warning=FALSE}
+
+build_corpus <- function(dataset){
+  docs <- VCorpus(VectorSource(dataset))
+  to_space <- content_transformer(
+    function(x,pattern){
+      gsub(pattern, " ",x)
+    }
+  )
+  
+  # Removing URL, Twitter handles, email pattern.
+  docs <- tm_map(docs, to_space,"(f|ht)tp(s?)://(.*)[.][a-z]+")
+  docs <- tm_map(docs, to_space,"@[^\\s]+")
+  docs <- tm_map(docs, to_space, "\\b[A-Z a-z 0-9._ - ]*[@](.*?)[.]{1,3} \\b")
+  
+  # Removing Profane words from the sample data.
+  
+  con <- file(
+    paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.blogs.txt',sep = "/"),
+  "r"
+  )
+  profanity <-readLines(
+    con, warn = FALSE, encoding = "UTF-8", skipNul = TRUE
+  )
+  close(con)
+  
+  profanity <- iconv(profanity, "latin1", "ASCII", sub = "")
+  docs <- tm_map(docs, removeWords,profanity)
+  
+  # Converting the words to lower case.
+  docs <- tm_map(docs, tolower)
+  # Removing stopwords
+  docs <- tm_map(docs, removeWords, stopwords("english"))
+  # Removing punctuation marks.
+  docs <- tm_map(docs, removePunctuation)
+  # Removing white spaces.
+  docs <- tm_map(docs, stripWhitespace)
+  # Removing Plain text document
+  docs <- tm_map(docs, PlainTextDocument)
+  
+  return(docs)
+}
+
+# Building corpus and writing to disk
+
+corpus <- build_corpus(sample_data)
+saveRDS(corpus, file = paste(
+  getwd(),"Coursera-SwiftKey/final/en_US/en_US.corpus.rds", sep = "/"
+))
+
+# Converting the corpus to a data frame and writing the lines/word to disks.
+
+corpus_text <- data.frame(text = unlist(
+  sapply(corpus, '[', "content")), stringsAsFactors = FALSE
+)
+
+con <- file(
+  paste(getwd(), "Coursera-SwiftKey/final/en_US/en_US.corpus.txt", open = "w")
+)
+writeLines(corpus_text$text, con)
+close(con)
+
+kable(head(corpus_text$text, 10),
+      row.names = FALSE,
+      col.names = NULL,
+      align = c("l"),
+      caption = "First 10 Documents") %>% kable_styling(position = "left")
 
 ```
 

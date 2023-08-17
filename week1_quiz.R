@@ -17,13 +17,14 @@ length(twitter)
 
 # 3.
 blogs <- file(
-  paste(path,'en_US/en_US.blogs.txt',sep = "/"),
+  paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.blogs.txt',sep = "/"),
   "r"
 )
 blog_lines <- readLines(blogs)
 close(blogs)
 bl <- summary(nchar(blog_lines))
 
+bl
 
 news<-file(paste(path, 'en_US/en_US.news.txt',sep = "/")
            ,"r")
