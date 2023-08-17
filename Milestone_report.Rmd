@@ -244,9 +244,8 @@ sample_data_words <- sum(stri_count_words(sample_data))
 build_corpus <- function(dataset){
   docs <- VCorpus(VectorSource(dataset))
   to_space <- content_transformer(
-    function(x,pattern){
+    function(x,pattern)
       gsub(pattern, " ",x)
-    }
   )
   
   # Removing URL, Twitter handles, email pattern.
@@ -257,7 +256,7 @@ build_corpus <- function(dataset){
   # Removing Profane words from the sample data.
   
   con <- file(
-    paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.blogs.txt',sep = "/"),
+    paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.profanity.txt',sep = "/"),
   "r"
   )
   profanity <-readLines(
@@ -295,10 +294,9 @@ corpus_text <- data.frame(text = unlist(
   sapply(corpus, '[', "content")), stringsAsFactors = FALSE
 )
 
-con <- file(
-  paste(getwd(), "Coursera-SwiftKey/final/en_US/en_US.corpus.txt", open = "w")
-)
-writeLines(corpus_text$text, con)
+corpus_filename <- paste(getwd(),"Coursera-SwiftKey/final/en_US/en_US.corpus.txt",sep = "/")
+con <- file(corpus_filename, open = "w")
+writeLines(corpus_text$text,con)
 close(con)
 
 kable(head(corpus_text$text, 10),
