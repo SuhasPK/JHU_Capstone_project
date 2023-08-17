@@ -91,6 +91,14 @@ if(!require(gridExtra)){
   install.packages("gridExtra")
   library(gridExtra)
 }
+if(!require(ggdark)){
+  install.packages("ggdark")
+  library(ggdark)
+}
+if(!require(RColorBrewer)){
+  install.packages("RColorBrewer")
+  library(RColorBrewer)
+}
 ```
 
 ### Importing the datasets.
@@ -172,7 +180,7 @@ plot1 <- qplot(wpl[[1]],
                xlim = c(0,200),
                xlab = "Words per Line",
                ylab = "Frequency",
-               binwidth = 5)
+               binwidth = 5) + dark_theme_light()
 
 plot2 <- qplot(wpl[[2]],
                geom = "histogram",
@@ -180,14 +188,14 @@ plot2 <- qplot(wpl[[2]],
                xlim = c(0,300),
                xlab = "Words per Line",
                ylab = "Frequency",
-               binwidth = 5)
+               binwidth = 5) + dark_theme_light()
 
 plot3 <- qplot(wpl[[3]],
                geom = "histogram",
                main = "US Twitter",
                xlab = "Words per Line",
                ylab = "Frequency",
-               binwidth = 1)
+               binwidth = 1) + dark_theme_light()
 
 plotList = list(plot1, plot2, plot3)
 do.call(grid.arrange, c(plotList, list(ncol = 1)))
@@ -198,7 +206,7 @@ rm(plot1, plot2, plot3)
 
 ### Sampling and cleaning.
 ```{r sampling and cleaning, message=FALSE}
-set.seed(20042)
+set.seed(2004522)
 
 # assigning sample size
 sampleSize = 0.01
@@ -299,13 +307,40 @@ con <- file(corpus_filename, open = "w")
 writeLines(corpus_text$text,con)
 close(con)
 
-kable(head(corpus_text$text, 10),
-      row.names = FALSE,
-      col.names = NULL,
-      align = c("l"),
-      caption = "First 10 Documents") %>% kable_styling(position = "left")
+rm(sample_data)
 
 ```
+### Word Frequencies
+
+```{r word frequency, message=FALSE, warning=FALSE}
+
+tdm <- TermDocumentMatrix(corpus)
+
+
+
+freq <- sort(rowSums(as.matrix(tdm)), decreasing = TRUE)
+
+
+word_Freq <- data.frame(word = names(freq), freq = freq, row.names = NULL)
+View(word_Freq)
+
+# Plotting top 10 most frequent words.
+
+plot_most_freq_word <- ggplot(
+  word_Freq[1:10,], aes(x = reorder(word_Freq[1:10,]$word, -word_Freq[1:10,]$freq),
+                       y = word_Freq[1:10,]$freq)
+)
+
+plot_most_freq_word <- plot_most_freq_word+
+  geom_bar(stat = "Identity", fill = "#90EE90" ) + 
+  geom_text(aes(label = word_Freq[1:10,]$freq), vjust = -0.20, size=3) + xlab("")+ ylab("Word Frequencies")+theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+               axis.text.x = element_text(hjust = 0.5, vjust = 0.5, angle = 45),
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")+dark_theme_light()
+
+plot_most_freq_word
+```
+
+
 
 
 
