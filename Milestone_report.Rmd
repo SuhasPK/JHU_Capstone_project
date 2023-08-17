@@ -1,0 +1,240 @@
+---
+title: "Johns Hopkins Data Science Specialization : Milestone Report"
+subtitle : "Exploratory Data Analysis and Modeling"
+author : "Suhas. P. K"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    default_style: "dark"
+    downcute_theme: "chaos"
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## Project Overview
+
+### Introduction
+
+Introduction to mobile devices led many inventions and innovations. Once there was a time where sending an email was a luxury. Within a span of two decades the evolution of communication devices from a huge hefty computing machines to a simple palm held, touch responsive mobile phone is observed significantly.
+
+One of the basic features of these mobile devices is to predicts words based on the sentences that the user types.
+
+In this **milestone project**, with the help of **SwiftKey** and **Johns Hopkins Data Science Specialization Course**, I will be attempting to build a predictive text models like those used by SwiftKey.
+
+In this project includes analyzing a large corpus of text documents to discover the structure in the data, and how words are put
+together. This involves cleaning and analysisng text data, building and sampling predictive text model. And build a predictive text product using Rshiny.
+
+### Resources 
+
+- [Text mining infrastructure in R](https://www.jstatsoft.org/article/view/v025i05)
+- [CRAN Task View: Natural Language Processing](https://cran.r-project.org/web/views/NaturalLanguageProcessing.html)
+- [NLP slides](https://web.stanford.edu/~jurafsky/NLPCourseraSlides.html)
+-[NLP Wiki](https://en.wikipedia.org/wiki/Natural_language_processing)
+
+### Course datasets
+
+This is the training dataset that I will be using for the basic exercises of this project.
+
+[Download here](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip)
+
+## Game Plan
+
+### Libraries
+
+```{r libraries, message=FALSE}
+if(!require(knitr)){
+  install.packages("knitr")
+  library(knitr)
+}
+if(!require(stringi)){
+  install.packages("stringi")
+  library(stringi)
+}
+if(!require(NLP)){
+  install.packages("NLP")
+  library(NLP)
+}
+if(!require(tm)){
+  install.packages("tm")
+  library(tm)
+}
+if(!require(RWeka)){
+  install.packages("RWeka")
+  library(RWeka)
+}
+if(!require(data.table)){
+  install.packages("data.table")
+  library(data.table)
+}
+if(!require(ggplot2)){
+  install.packages("ggplot2")
+  library(ggplot2)
+}
+if(!require(SnowballC)){
+  install.packages("SnowballC")
+  library(SnowballC)
+}
+if(!require(wordcloud)){
+  install.packages("wordcloud")
+  library(wordcloud)
+}
+if(!require(kableExtra)){
+  install.packages("kableExtra")
+  library(kableExtra)
+}
+if(!require(gridExtra)){
+  install.packages("gridExtra")
+  library(gridExtra)
+}
+```
+
+### Importing the datasets.
+```{r import datasets,message=FALSE}
+
+# Read Blog lines
+blogs <- file(
+  paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.blogs.txt',sep = "/"),
+  "r"
+)
+blog_lines <- readLines(blogs, warn = FALSE, encoding = "UTF-8", skipNul = TRUE)
+close(blogs)
+
+# Read News lines
+news <- file(
+  paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.news.txt',sep = "/"),
+  "r"
+)
+news_lines <- readLines(news,warn = FALSE, encoding = "UTF-8", skipNul = TRUE)
+close(news)
+
+# Read Twitter Lines
+twitter <- file(
+  paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.twitter.txt',sep = "/"),
+  "r"
+)
+twitter_lines <- readLines(twitter,warn = FALSE, encoding = "UTF-8", skipNul = TRUE)
+close(twitter)
+
+
+```
+
+### General statistics on 'Words per line (wpl)'
+
+```{r wpl, message=FALSE}
+
+# number of lines 
+num_lines <- sapply(list(blog_lines,news_lines,twitter_lines), length)
+
+# number of characters
+num_char <- sapply(list(nchar(blog_lines),nchar(news_lines),nchar(twitter_lines)),sum)
+
+# number of words 
+num_words <- sapply(list(blog_lines,news_lines,twitter_lines), stri_stats_latex)[4,]
+
+# number of words per line
+wpl <- lapply(list(blog_lines,news_lines,twitter_lines), function(x){stri_count_words(x)})
+
+# summary 
+wpl_gist <- sapply(list(blog_lines,news_lines,twitter_lines), function(x){
+  summary(stri_count_words(x))[c('Min.', 'Mean', 'Max.')]})
+
+rownames(wpl_gist) = c('wpl_min', 'wpl_mean', 'wpl_max')
+
+gist <- data.frame(
+  FileName = c("en_US.blogs.txt","en_US.news.txt","en_US.twitter.txt"),
+  FileSize = sapply(
+    list(blog_lines,news_lines,twitter_lines), function(x){format(object.size(x),"MB")}
+  ),
+  Lines = num_lines,
+  Charaters = num_char,
+  Words = num_words,
+  t(rbind(round(wpl_gist)))
+  
+)
+
+# Tabular representation
+
+gist %>% kbl() %>%  kable_styling(bootstrap_options = c("condensed", "responsive"))
+
+```
+
+
+
+```{r wpl_histogram, message=FALSE, warning=FALSE}
+plot1 <- qplot(wpl[[1]],
+               geom = "histogram",
+               main = "US Blogs",
+               xlim = c(0,200),
+               xlab = "Words per Line",
+               ylab = "Frequency",
+               binwidth = 5)
+
+plot2 <- qplot(wpl[[2]],
+               geom = "histogram",
+               main = "US News",
+               xlim = c(0,300),
+               xlab = "Words per Line",
+               ylab = "Frequency",
+               binwidth = 5)
+
+plot3 <- qplot(wpl[[3]],
+               geom = "histogram",
+               main = "US Twitter",
+               xlab = "Words per Line",
+               ylab = "Frequency",
+               binwidth = 1)
+
+plotList = list(plot1, plot2, plot3)
+do.call(grid.arrange, c(plotList, list(ncol = 1)))
+
+# free up some memory
+rm(plot1, plot2, plot3)
+```
+
+```{r sampling and cleaning, message=FALSE}
+set.seed(20042)
+
+# assigning sample size
+sampleSize = 0.01
+# sampling all 3 datasets
+sample_blogs <- sample(blog_lines, length(blog_lines)*sampleSize, replace = FALSE)
+
+sample_news <- sample(news_lines, length(blog_lines)*sampleSize, replace = FALSE)
+
+sample_twitter <- sample(twitter_lines, length(blog_lines)*sampleSize, replace = FALSE)
+
+# Removing all non-English characters from the sample data.
+
+sample_blogs <- iconv(sample_blogs, "latin1", "ASCII", sub="")
+
+sample_news <- iconv(sample_news, "latin1", "ASCII", sub="")
+
+sample_twitter <- iconv(sample_twitter, "latin1", "ASCII", sub="")
+
+# Combining all 3 sample data sets into a single data set and writing to disk.
+
+sample_data <- c(sample_blogs,sample_news,sample_twitter)
+sample_data_filename <- paste(getwd(),                          "Coursera-SwiftKey/final/en_US/en_US.sample.txt",sep = "/")
+con <- file(sample_data_filename, open = "w")
+writeLines(sample_data,con)
+close(con)
+
+# number of lines and words in the sample data set.
+sample_data_lines <- length(sample_data)
+sample_data_words <- sum(stri_count_words(sample_data))
+
+```
+
+
+
+
+
+
+
+
+

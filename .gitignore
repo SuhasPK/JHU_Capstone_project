@@ -47,3 +47,9 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Data set
+/Coursera-SwiftKey
+
+# Zip files
+*.zip
