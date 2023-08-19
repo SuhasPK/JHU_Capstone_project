@@ -1,52 +1,3 @@
----
-title: "Johns Hopkins Data Science Specialization : Milestone Report"
-subtitle : "Exploratory Data Analysis and Modeling"
-author : "Suhas. P. K"
-date: "`r Sys.Date()`"
-output:
-  rmdformats::downcute:
-    self_contained: true
-    default_style: "dark"
-    downcute_theme: "chaos"
----
-
-
-```{r setup, include=FALSE}
-## Global options
-knitr::opts_chunk$set(cache = TRUE)
-```
-
-## Project Overview
-
-### Introduction
-
-Introduction to mobile devices led many inventions and innovations. Once there was a time where sending an email was a luxury. Within a span of two decades the evolution of communication devices from a huge hefty computing machines to a simple palm held, touch responsive mobile phone is observed significantly.
-
-One of the basic features of these mobile devices is to predicts words based on the sentences that the user types.
-
-In this **milestone project**, with the help of **SwiftKey** and **Johns Hopkins Data Science Specialization Course**, I will be attempting to build a predictive text models like those used by SwiftKey.
-
-In this project includes analyzing a large corpus of text documents to discover the structure in the data, and how words are put
-together. This involves cleaning and analysisng text data, building and sampling predictive text model. And build a predictive text product using Rshiny.
-
-### Resources 
-
-- [Text mining infrastructure in R](https://www.jstatsoft.org/article/view/v025i05)
-- [CRAN Task View: Natural Language Processing](https://cran.r-project.org/web/views/NaturalLanguageProcessing.html)
-- [NLP slides](https://web.stanford.edu/~jurafsky/NLPCourseraSlides.html)
--[NLP Wiki](https://en.wikipedia.org/wiki/Natural_language_processing)
-
-### Course datasets
-
-This is the training dataset that I will be using for the basic exercises of this project.
-
-[Download here](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip)
-
-## Game Plan 
-
-### Libraries
-
-```{r libraries, message=FALSE}
 if(!require(knitr)){
   install.packages("knitr")
   library(knitr)
@@ -99,12 +50,8 @@ if(!require(RColorBrewer)){
   install.packages("RColorBrewer")
   library(RColorBrewer)
 }
-```
-
-### Importing the datasets.
-```{r import datasets,message=FALSE}
-
-# Read Blog lines
+#########################################################
+# Read bolg lines
 blogs <- file(
   paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.blogs.txt',sep = "/"),
   "r"
@@ -120,7 +67,7 @@ news <- file(
 news_lines <- readLines(news,warn = FALSE, encoding = "UTF-8", skipNul = TRUE)
 close(news)
 
-# Read Twitter Lines
+# Read Twitter lines
 twitter <- file(
   paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.twitter.txt',sep = "/"),
   "r"
@@ -128,13 +75,7 @@ twitter <- file(
 twitter_lines <- readLines(twitter,warn = FALSE, encoding = "UTF-8", skipNul = TRUE)
 close(twitter)
 
-
-```
-
-### General statistics on 'Words per line (wpl)'
-
-```{r wpl, message=FALSE}
-
+###################################################################
 # number of lines 
 num_lines <- sapply(list(blog_lines,news_lines,twitter_lines), length)
 
@@ -169,11 +110,7 @@ gist <- data.frame(
 
 gist %>% kbl() %>%  kable_styling(bootstrap_options = c("condensed", "responsive"))
 
-```
-
-
-
-```{r wpl_histogram, message=FALSE, warning=FALSE}
+############################################################################
 plot1 <- qplot(wpl[[1]],
                geom = "histogram",
                main = "US Blogs",
@@ -202,10 +139,9 @@ do.call(grid.arrange, c(plotList, list(ncol = 1)))
 
 # free up some memory
 rm(plot1, plot2, plot3)
-```
 
-### Sampling and cleaning.
-```{r sampling and cleaning, message=FALSE}
+##############################################################################
+
 set.seed(2004522)
 
 # assigning sample size
@@ -228,7 +164,7 @@ sample_twitter <- iconv(sample_twitter, "latin1", "ASCII", sub="")
 # Combining all 3 sample data sets into a single data set and writing to disk.
 
 sample_data <- c(sample_blogs,sample_news,sample_twitter)
-sample_data_filename <- paste(getwd(),                          "Coursera-SwiftKey/final/en_US/en_US.sample.txt",sep = "/")
+sample_data_filename <- paste(getwd(),"Coursera-SwiftKey/final/en_US/en_US.sample.txt",sep = "/")
 con <- file(sample_data_filename, open = "w")
 writeLines(sample_data,con)
 close(con)
@@ -237,18 +173,7 @@ close(con)
 sample_data_lines <- length(sample_data)
 sample_data_words <- sum(stri_count_words(sample_data))
 
-```
-
-### Profanity dataset.
-
-- For **profanity check** I downloaded a .csv file from **Kaggle** [Profanities in English](https://www.kaggle.com/datasets/konradb/profanities-in-english-collection). 
-- The downloaded data set is in csv format. So I changed it to a text format so all data set are in same format.
-- It is saved as 'en_US.profanity.txt' .
-
-### Building Corpus
-
-```{r corpus, message=FALSE, warning=FALSE}
-
+##########################################################################################
 build_corpus <- function(dataset){
   docs <- VCorpus(VectorSource(dataset))
   to_space <- content_transformer(
@@ -265,7 +190,7 @@ build_corpus <- function(dataset){
   
   con <- file(
     paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.profanity.txt',sep = "/"),
-  "r"
+    "r"
   )
   profanity <-readLines(
     con, warn = FALSE, encoding = "UTF-8", skipNul = TRUE
@@ -307,14 +232,11 @@ con <- file(corpus_filename, open = "w")
 writeLines(corpus_text$text,con)
 close(con)
 
-rm(sample_data)
 
-```
-### Word Frequencies
 
-```{r word frequency, message=FALSE, warning=FALSE}
+################################################################################
 
-tdm <- TermDocumentMatrix(corpus)
+tdm <- TermDocumentMatrix(corpus_text)
 
 
 
@@ -328,14 +250,14 @@ word_Freq <- data.frame(word = names(freq), freq = freq, row.names = NULL)
 
 plot_most_freq_word <- ggplot(
   word_Freq[1:10,], aes(x = reorder(word_Freq[1:10,]$word, -word_Freq[1:10,]$freq),
-                       y = word_Freq[1:10,]$freq)
+                        y = word_Freq[1:10,]$freq)
 )
 
 plot_most_freq_word <- plot_most_freq_word+
   geom_bar(stat = "Identity", fill = "#90EE90" ) + 
   geom_text(aes(label = word_Freq[1:10,]$freq), vjust = -0.20, size=3) + xlab("Words")+ ylab("Word Frequencies")+theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-               axis.text.x = element_text(hjust = 0.5, vjust = 0.5, angle = 45),
-               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")+dark_theme_light()
+                                                                                                                       axis.text.x = element_text(hjust = 0.5, vjust = 0.5, angle = 45),
+                                                                                                                       axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")+dark_theme_light()
 
 plot_most_freq_word
 
@@ -354,11 +276,7 @@ suppressWarnings(
   
 )
 
-```
-
-### Tokenizing and N-Gram Generation
-```{r tokenization, message=FALSE, warning=FALSE}
-
+################################################################################
 unigram_tokenizer <- function(x){
   NGramTokenizer(x, Weka_control(min=1, max = 1))
 }
@@ -369,58 +287,19 @@ bigram_tokenizer <- function(x){
 
 trigram_tokenizer <- function(x){
   NGramTokenizer(x,
-                 Weka_control(min=3, max=3))
-}
-```
-
-### Unigrams
-```{r unigrams, message=FALSE, warning=FALSE}
-
+                 Weka_control(min=3, max=3))}
+################################################################################
 # creating term document matrix for the corpus
-unigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = unigram_tokenizer))
+bigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = bigram_tokenizer))
 
 # Eleminating sparse terms for each N-gram and get frequencies of most common n-grams
 
-unigram_matrix_freq <- sort(rowSums(as.matrix(
-  removeSparseTerms(
-    unigram_matrix, 0.99
-  )
-)), decreasing = TRUE)
-
-
-unigram_matrix_freq <- data.frame(
-  word = names(unigram_matrix_freq),
-  freq = unigram_matrix_freq,
-  row.names = NULL
-)
-
-head(unigram_matrix_freq,5)
-# Plotting histogram
-unigram_hist <- ggplot(
-  unigram_matrix_freq[1:20,],
-  aes(x = reorder(word, -freq), y = freq)
-) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
-  aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
-  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-               axis.text.x = element_text(hjust = 1.0, angle = 45),
-               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
-
-unigram_hist
-
-rm(unigram_matrix, unigram_matrix_freq, unigram_hist)
-```
-
-### Bigrams
-```{r bigram, message=FALSE, warning=FALSE}
-bigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = bigram_tokenizer))
-
 bigram_matrix_freq <- sort(rowSums(as.matrix(
   removeSparseTerms(
-    bigram_matrix, 0.9999
+    bigram_matrix, 0.99
   )
 )), decreasing = TRUE)
 
-bigram_matrix
 
 bigram_matrix_freq <- data.frame(
   word = names(bigram_matrix_freq),
@@ -428,19 +307,36 @@ bigram_matrix_freq <- data.frame(
   row.names = NULL
 )
 
-bigram_tokenizer(corpus_text)
+head(bigram_matrix_freq,5)
+# Plotting histogram
+unigram_hist <- ggplot(
+  unigram_matrix_freq[1:20,],
+  aes(x = reorder(word, -freq), y = freq)
+) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
+  aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
+  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+        axis.text.x = element_text(hjust = 1.0, angle = 45),
+        axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
 
-```
+unigram_hist
+
+rm(unigram_matrix, unigram_matrix_freq, unigram_hist)
+
+################################################################################
+
+bigram_tokenizer <- function(x){
+  NGramTokenizer(x, Weka_control(min=2,max=2))
+}
 
 
-### Trigrams
-
-```{r trigrams, message=FALSE, warning=FALSE}
-
-# creating term document matrix for the corpus.
 
 
-```
+
+
+
+
+
+
 
 
 
