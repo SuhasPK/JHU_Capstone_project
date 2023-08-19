@@ -305,10 +305,8 @@ bigramMatrix <- TermDocumentMatrix(corpus, control = list(tokenize = bigramToken
 
 # eliminate sparse terms for each n-gram and get frequencies of most common n-grams
 bigramMatrixFreq <- sort(rowSums(as.matrix(removeSparseTerms(bigramMatrix, 0.999))), decreasing = TRUE)
-bigramMatrixFreq <- data.frame(word = names(bigramMatrixFreq), freq = bigramMatrixFreq)
-
-bigramMatrixFreq
-
+bigramMatrixFreq <- data.frame(word = names(bigramMatrixFreq), freq = bigramMatrixFreq, row.names = NULL)
+View(bigramMatrixFreq)
 
 
 
