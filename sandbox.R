@@ -106,46 +106,14 @@ gist <- data.frame(
   
 )
 
-# Tabular representation
 
-gist %>% kbl() %>%  kable_styling(bootstrap_options = c("condensed", "responsive"))
 
-############################################################################
-plot1 <- qplot(wpl[[1]],
-               geom = "histogram",
-               main = "US Blogs",
-               xlim = c(0,200),
-               xlab = "Words per Line",
-               ylab = "Frequency",
-               binwidth = 5) + dark_theme_light()
+##########################################################################
 
-plot2 <- qplot(wpl[[2]],
-               geom = "histogram",
-               main = "US News",
-               xlim = c(0,300),
-               xlab = "Words per Line",
-               ylab = "Frequency",
-               binwidth = 5) + dark_theme_light()
-
-plot3 <- qplot(wpl[[3]],
-               geom = "histogram",
-               main = "US Twitter",
-               xlab = "Words per Line",
-               ylab = "Frequency",
-               binwidth = 1) + dark_theme_light()
-
-plotList = list(plot1, plot2, plot3)
-do.call(grid.arrange, c(plotList, list(ncol = 1)))
-
-# free up some memory
-rm(plot1, plot2, plot3)
-
-##############################################################################
-
-set.seed(2004522)
+set.seed(660067)
 
 # assigning sample size
-sampleSize = 0.01
+sampleSize = 0.001
 # sampling all 3 datasets
 sample_blogs <- sample(blog_lines, length(blog_lines)*sampleSize, replace = FALSE)
 
@@ -217,6 +185,7 @@ build_corpus <- function(dataset){
 # Building corpus and writing to disk
 
 corpus <- build_corpus(sample_data)
+
 saveRDS(corpus, file = paste(
   getwd(),"Coursera-SwiftKey/final/en_US/en_US.corpus.rds", sep = "/"
 ))
@@ -236,98 +205,109 @@ close(con)
 
 ################################################################################
 
-tdm <- TermDocumentMatrix(corpus_text)
-
-
-
-freq <- sort(rowSums(as.matrix(tdm)), decreasing = TRUE)
-
-
-word_Freq <- data.frame(word = names(freq), freq = freq, row.names = NULL)
-
-
-# Plotting top 10 most frequent words.
-
-plot_most_freq_word <- ggplot(
-  word_Freq[1:10,], aes(x = reorder(word_Freq[1:10,]$word, -word_Freq[1:10,]$freq),
-                        y = word_Freq[1:10,]$freq)
-)
-
-plot_most_freq_word <- plot_most_freq_word+
-  geom_bar(stat = "Identity", fill = "#90EE90" ) + 
-  geom_text(aes(label = word_Freq[1:10,]$freq), vjust = -0.20, size=3) + xlab("Words")+ ylab("Word Frequencies")+theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-                                                                                                                       axis.text.x = element_text(hjust = 0.5, vjust = 0.5, angle = 45),
-                                                                                                                       axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")+dark_theme_light()
-
-plot_most_freq_word
-
-# Word cloud
-suppressWarnings(
-  wordcloud(
-    words = word_Freq$word,
-    freq = word_Freq$freq,
-    min.freq = 1,
-    max.words = 100,
-    random.order = FALSE,
-    rot.per = 0.35,
-    colors = brewer.pal(10, "Dark2")
-  ) 
-  
-  
-)
-
-################################################################################
-unigram_tokenizer <- function(x){
-  NGramTokenizer(x, Weka_control(min=1, max = 1))
-}
-
-bigram_tokenizer <- function(x){
-  NGramTokenizer(x, Weka_control(min=2,max=2))
-}
-
-trigram_tokenizer <- function(x){
-  NGramTokenizer(x,
-                 Weka_control(min=3, max=3))}
+# tdm <- TermDocumentMatrix(corpus_text)
+# 
+# 
+# 
+# freq <- sort(rowSums(as.matrix(tdm)), decreasing = TRUE)
+# 
+# 
+# word_Freq <- data.frame(word = names(freq), freq = freq, row.names = NULL)
+# 
+# 
+# # Plotting top 10 most frequent words.
+# 
+# plot_most_freq_word <- ggplot(
+#   word_Freq[1:10,], aes(x = reorder(word_Freq[1:10,]$word, -word_Freq[1:10,]$freq),
+#                         y = word_Freq[1:10,]$freq)
+# )
+# 
+# plot_most_freq_word <- plot_most_freq_word+
+#   geom_bar(stat = "Identity", fill = "#90EE90" ) + 
+#   geom_text(aes(label = word_Freq[1:10,]$freq), vjust = -0.20, size=3) + xlab("Words")+ ylab("Word Frequencies")+theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+#                                                                                                                        axis.text.x = element_text(hjust = 0.5, vjust = 0.5, angle = 45),
+#                                                                                                                        axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")+dark_theme_light()
+# 
+# plot_most_freq_word
+# 
+# # Word cloud
+# suppressWarnings(
+#   wordcloud(
+#     words = word_Freq$word,
+#     freq = word_Freq$freq,
+#     min.freq = 1,
+#     max.words = 100,
+#     random.order = FALSE,
+#     rot.per = 0.35,
+#     colors = brewer.pal(10, "Dark2")
+#   ) 
+#   
+#   
+# )
+# 
+# ################################################################################
+# unigram_tokenizer <- function(x){
+#   NGramTokenizer(x, Weka_control(min=1, max = 1))
+# }
+# 
+# bigram_tokenizer <- function(x){
+#   NGramTokenizer(x, Weka_control(min=2,max=2))
+# }
+# 
+# trigram_tokenizer <- function(x){
+#   NGramTokenizer(x,
+#                  Weka_control(min=3, max=3))}
 ################################################################################
 # creating term document matrix for the corpus
-bigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = bigram_tokenizer))
+#bigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = bigram_tokenizer))
 
-# Eleminating sparse terms for each N-gram and get frequencies of most common n-grams
+# Eliminating sparse terms for each N-gram and get frequencies of most common n-grams
 
-bigram_matrix_freq <- sort(rowSums(as.matrix(
-  removeSparseTerms(
-    bigram_matrix, 0.99
-  )
-)), decreasing = TRUE)
-
-
-bigram_matrix_freq <- data.frame(
-  word = names(bigram_matrix_freq),
-  freq = bigram_matrix_freq,
-  row.names = NULL
-)
-
-head(bigram_matrix_freq,5)
-# Plotting histogram
-unigram_hist <- ggplot(
-  unigram_matrix_freq[1:20,],
-  aes(x = reorder(word, -freq), y = freq)
-) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
-  aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
-  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-        axis.text.x = element_text(hjust = 1.0, angle = 45),
-        axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
-
-unigram_hist
-
-rm(unigram_matrix, unigram_matrix_freq, unigram_hist)
+# bigram_matrix_freq <- sort(rowSums(as.matrix(
+#   removeSparseTerms(
+#     bigram_matrix, 0.99
+#   )
+# )), decreasing = TRUE)
+# 
+# 
+# bigram_matrix_freq <- data.frame(
+#   word = names(bigram_matrix_freq),
+#   freq = bigram_matrix_freq,
+#   row.names = NULL
+# )
+# 
+# head(bigram_matrix_freq,5)
+# # Plotting histogram
+# unigram_hist <- ggplot(
+#   unigram_matrix_freq[1:20,],
+#   aes(x = reorder(word, -freq), y = freq)
+# ) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
+#   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
+#   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+#         axis.text.x = element_text(hjust = 1.0, angle = 45),
+#         axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
+# 
+# unigram_hist
+# 
+# rm(unigram_matrix, unigram_matrix_freq, unigram_hist)
 
 ################################################################################
 
-bigram_tokenizer <- function(x){
-  NGramTokenizer(x, Weka_control(min=2,max=2))
-}
+####################################
 
+
+unigramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 1, max = 1))
+bigramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
+trigramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
+
+
+bigramMatrix <- TermDocumentMatrix(corpus, control = list(tokenize = bigramTokenizer))
+
+# eliminate sparse terms for each n-gram and get frequencies of most common n-grams
+bigramMatrixFreq <- sort(rowSums(as.matrix(removeSparseTerms(bigramMatrix, 0.999))), decreasing = TRUE)
+bigramMatrixFreq <- data.frame(word = names(bigramMatrixFreq), freq = bigramMatrixFreq)
+
+bigramMatrixFreq
 
 
 

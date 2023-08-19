@@ -206,7 +206,7 @@ rm(plot1, plot2, plot3)
 
 ### Sampling and cleaning.
 ```{r sampling and cleaning, message=FALSE}
-set.seed(2004522)
+set.seed(660067)
 
 # assigning sample size
 sampleSize = 0.01
@@ -407,20 +407,36 @@ unigram_hist <- ggplot(
 
 unigram_hist
 
-rm(unigram_matrix, unigram_matrix_freq, unigram_hist)
+# Word cloud
+suppressWarnings(
+  wordcloud(
+    words = unigram_matrix_freq$word,
+    freq = unigram_matrix_freq$freq,
+    min.freq = 1,
+    max.words = 100,
+    random.order = FALSE,
+    rot.per = 0.35,
+    colors = brewer.pal(10, "Dark2")
+  ) 
+  
+  
+)
 ```
 
 ### Bigrams
 ```{r bigram, message=FALSE, warning=FALSE}
+
+# creating term document matrix for the corpus
 bigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = bigram_tokenizer))
+
+# Eliminating sparse terms for each N-gram and get frequencies of most common n-grams
 
 bigram_matrix_freq <- sort(rowSums(as.matrix(
   removeSparseTerms(
-    bigram_matrix, 0.9999
+    bigram_matrix, 0.999
   )
 )), decreasing = TRUE)
 
-bigram_matrix
 
 bigram_matrix_freq <- data.frame(
   word = names(bigram_matrix_freq),
@@ -428,7 +444,33 @@ bigram_matrix_freq <- data.frame(
   row.names = NULL
 )
 
-bigram_tokenizer(corpus_text)
+
+# Plotting histogram
+bigram_hist <- ggplot(
+  bigram_matrix_freq[1:20,],
+  aes(x = reorder(word, -freq), y = freq)
+) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
+  aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
+  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+               axis.text.x = element_text(hjust = 1.0, angle = 45),
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
+
+bigram_hist
+
+# Word cloud
+suppressWarnings(
+  wordcloud(
+    words = bigram_matrix_freq$word,
+    freq = bigram_matrix_freq$freq,
+    min.freq = 1,
+    max.words = 100,
+    random.order = FALSE,
+    rot.per = 0.35,
+    colors = brewer.pal(10, "Dark2")
+  ) 
+  
+  
+)
 
 ```
 
