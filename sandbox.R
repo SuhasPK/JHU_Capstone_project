@@ -309,10 +309,20 @@ bigramMatrixFreq <- data.frame(word = names(bigramMatrixFreq), freq = bigramMatr
 View(bigramMatrixFreq)
 
 
-
-
-
-
+# Word cloud
+suppressWarnings(
+  wordcloud(
+    words = bigramMatrixFreq$word,
+    freq = bigramMatrixFreq$freq,
+    min.freq = 1,
+    max.words = 100,
+    random.order = FALSE,
+    rot.per = 0.35,
+    colors = brewer.pal(10, "Dark2")
+  ) 
+  
+  
+)
 
 
 

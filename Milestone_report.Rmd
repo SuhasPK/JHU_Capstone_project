@@ -8,6 +8,7 @@ output:
     self_contained: true
     default_style: "dark"
     downcute_theme: "chaos"
+    
 ---
 
 
@@ -44,9 +45,10 @@ This is the training dataset that I will be using for the basic exercises of thi
 
 ## Game Plan 
 
+The libraries used are `knitr, stringi,NLP,tm,RWeka,SnowballC, data.table, wordcloud, ggplot2, kableExtra, gridExtra, ggdark, and RColorBrewer`.
 ### Libraries
 
-```{r libraries, message=FALSE}
+```{r libraries, message=FALSE, echo=FALSE, warning=FALSE}
 if(!require(knitr)){
   install.packages("knitr")
   library(knitr)
@@ -102,6 +104,7 @@ if(!require(RColorBrewer)){
 ```
 
 ### Importing the datasets.
+
 ```{r import datasets,message=FALSE}
 
 # Read Blog lines
@@ -210,19 +213,16 @@ set.seed(660067)
 
 # assigning sample size
 sampleSize = 0.01
+
 # sampling all 3 datasets
 sample_blogs <- sample(blog_lines, length(blog_lines)*sampleSize, replace = FALSE)
-
 sample_news <- sample(news_lines, length(blog_lines)*sampleSize, replace = FALSE)
-
 sample_twitter <- sample(twitter_lines, length(blog_lines)*sampleSize, replace = FALSE)
 
 # Removing all non-English characters from the sample data.
 
 sample_blogs <- iconv(sample_blogs, "latin1", "ASCII", sub="")
-
 sample_news <- iconv(sample_news, "latin1", "ASCII", sub="")
-
 sample_twitter <- iconv(sample_twitter, "latin1", "ASCII", sub="")
 
 # Combining all 3 sample data sets into a single data set and writing to disk.
@@ -236,6 +236,8 @@ close(con)
 # number of lines and words in the sample data set.
 sample_data_lines <- length(sample_data)
 sample_data_words <- sum(stri_count_words(sample_data))
+sample_data_lines
+
 
 ```
 
@@ -307,7 +309,7 @@ con <- file(corpus_filename, open = "w")
 writeLines(corpus_text$text,con)
 close(con)
 
-rm(sample_data)
+
 
 ```
 ### Word Frequencies
@@ -315,12 +317,7 @@ rm(sample_data)
 ```{r word frequency, message=FALSE, warning=FALSE}
 
 tdm <- TermDocumentMatrix(corpus)
-
-
-
 freq <- sort(rowSums(as.matrix(tdm)), decreasing = TRUE)
-
-
 word_Freq <- data.frame(word = names(freq), freq = freq, row.names = NULL)
 
 
@@ -377,9 +374,9 @@ trigram_tokenizer <- function(x){
 ```{r unigrams, message=FALSE, warning=FALSE}
 
 # creating term document matrix for the corpus
-unigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = unigram_tokenizer))
+unigram_matrix <- TermDocumentMatrix(corpus, control = list(tokenize = unigram_tokenizer))
 
-# Eleminating sparse terms for each N-gram and get frequencies of most common n-grams
+# Eliminating sparse terms for each N-gram and get frequencies of most common n-grams
 
 unigram_matrix_freq <- sort(rowSums(as.matrix(
   removeSparseTerms(
@@ -394,7 +391,7 @@ unigram_matrix_freq <- data.frame(
   row.names = NULL
 )
 
-head(unigram_matrix_freq,5)
+
 # Plotting histogram
 unigram_hist <- ggplot(
   unigram_matrix_freq[1:20,],
@@ -427,7 +424,7 @@ suppressWarnings(
 ```{r bigram, message=FALSE, warning=FALSE}
 
 # creating term document matrix for the corpus
-bigram_matrix <- TermDocumentMatrix(corpus_text, control = list(tokenize = bigram_tokenizer))
+bigram_matrix <- TermDocumentMatrix(corpus, control = list(tokenize = bigram_tokenizer))
 
 # Eliminating sparse terms for each N-gram and get frequencies of most common n-grams
 
@@ -449,11 +446,11 @@ bigram_matrix_freq <- data.frame(
 bigram_hist <- ggplot(
   bigram_matrix_freq[1:20,],
   aes(x = reorder(word, -freq), y = freq)
-) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
+) + geom_bar(stat = "identity", fill = "#FFD580")+ geom_text(
   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
                axis.text.x = element_text(hjust = 1.0, angle = 45),
-               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common bigrams")+dark_theme_light()
 
 bigram_hist
 
@@ -478,9 +475,52 @@ suppressWarnings(
 ### Trigrams
 
 ```{r trigrams, message=FALSE, warning=FALSE}
+# creating term document matrix for the corpus
+trigram_matrix <- TermDocumentMatrix(corpus, control = list(tokenize = trigram_tokenizer))
 
-# creating term document matrix for the corpus.
+# Eliminating sparse terms for each N-gram and get frequencies of most common n-grams
 
+trigram_matrix_freq <- sort(rowSums(as.matrix(
+  removeSparseTerms(
+    trigram_matrix, 0.9999
+  )
+)), decreasing = TRUE)
+
+
+trigram_matrix_freq <- data.frame(
+  word = names(trigram_matrix_freq),
+  freq = trigram_matrix_freq,
+  row.names = NULL
+)
+
+
+
+# Plotting histogram
+trigram_hist <- ggplot(
+  trigram_matrix_freq[1:20,],
+  aes(x = reorder(word, -freq), y = freq)
+) + geom_bar(stat = "identity", fill = "#fff44f")+ geom_text(
+  aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
+  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+               axis.text.x = element_text(hjust = 1.0, angle = 45),
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common trigrams")+dark_theme_light()
+
+trigram_hist
+
+# Word cloud
+suppressWarnings(
+  wordcloud(
+    words = trigram_matrix_freq$word,
+    freq = trigram_matrix_freq$freq,
+    min.freq = 1,
+    max.words = 100,
+    random.order = FALSE,
+    rot.per = 0.35,
+    colors = brewer.pal(10, "Dark2")
+  ) 
+  
+  
+)
 
 ```
 
