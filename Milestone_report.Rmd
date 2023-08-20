@@ -8,6 +8,7 @@ output:
     self_contained: true
     default_style: "dark"
     downcute_theme: "chaos"
+    toc : 5
     
 ---
 
@@ -392,9 +393,9 @@ plot_most_freq_word <- ggplot(
 
 plot_most_freq_word <- plot_most_freq_word+
   geom_bar(stat = "Identity", fill = "#90EE90" ) + 
-  geom_text(aes(label = word_Freq[1:10,]$freq), vjust = -0.20, size=3) + xlab("Words")+ ylab("Word Frequencies")+theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+  geom_text(aes(label = word_Freq[1:10,]$freq), vjust = -0.20, size=3) + xlab("Words")+ ylab("Word Frequencies")+dark_theme_light()+theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
                axis.text.x = element_text( angle = 45, vjust = 1, hjust = 1),
-               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")+dark_theme_light()
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")
 
 plot_most_freq_word
 
@@ -476,12 +477,12 @@ unigram_matrix_freq <- data.frame(
 unigram_hist <- ggplot(
   unigram_matrix_freq[1:20,],
   aes(x = reorder(word, -freq), y = freq)
-) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
+) + geom_bar(stat = "identity", fill = "#37BEB0")+ dark_theme_light() +geom_text(
   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
                axis.text.x = element_text( angle = 45, hjust = 1.0, vjust = 1),
                axis.text.y = element_text(hjust = 0.5, vjust = 0.5),
-        )+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
+        )+ ggtitle("20 Most Common Unigrams")
 
 unigram_hist
 
@@ -533,11 +534,11 @@ bigram_matrix_freq <- data.frame(
 bigram_hist <- ggplot(
   bigram_matrix_freq[1:20,],
   aes(x = reorder(word, -freq), y = freq)
-) + geom_bar(stat = "identity", fill = "#FFD580")+ geom_text(
+) + geom_bar(stat = "identity", fill = "#FFD580")+ dark_theme_light() +geom_text(
   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
                axis.text.x = element_text(angle = 45, hjust = 1.0, vjust = 1.0),
-               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common bigrams")+dark_theme_light()
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common bigrams")
 
 bigram_hist
 
@@ -590,13 +591,13 @@ trigram_matrix_freq <- data.frame(
 
 # Plotting histogram
 trigram_hist <- ggplot(
-  trigram_matrix_freq[1:20,],
+  trigram_matrix_freq[1:10,],
   aes(x = reorder(word, -freq), y = freq)
-) + geom_bar(stat = "identity", fill = "#fff44f")+ geom_text(
+) + geom_bar(stat = "identity", fill = "#fff44f")+ dark_theme_light() +geom_text(
   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
                axis.text.x = element_text(angle = 45, hjust = 1.0),
-               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common trigrams")+dark_theme_light()
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("10 Most Common trigrams")
 
 trigram_hist
 
