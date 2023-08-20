@@ -44,16 +44,11 @@ This is the training dataset that I will be using for the basic exercises of thi
 
 [Download here](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip)
 
-## Game Plan 
 
 ### Libraries and usage.
 
 - The libraries used in no particular order are `knitr, stringi, NLP, tm, RWeka, SnowballC, data.table, wordcloud, ggplot2, kableExtra, gridExtra, ggdark, and RColorBrewer`.
-- To install and load a library, say `ggplot2`, this approach can be used, <\br>
-`if(!require(ggplot2)){
-  install.packages("ggplot2")
-  library(ggplot2)
-}`
+
 
 ```{r libraries, message=FALSE, echo=FALSE, warning=FALSE}
 if(!require(knitr)){
@@ -145,6 +140,7 @@ close(twitter)
 
 
 ```
+## Exploratory Data Analysis
 
 ### General statistics on 'Words per line (wpl)'
 
@@ -270,7 +266,7 @@ sample_twitter <- iconv(sample_twitter, "latin1", "ASCII", sub="")
 # Combining all 3 sample data sets into a single data set and writing to disk.
 
 sample_data <- c(sample_blogs,sample_news,sample_twitter)
-sample_data_filename <- paste(getwd(),                          "Coursera-SwiftKey/final/en_US/en_US.sample.txt",sep = "/")
+sample_data_filename <- paste(getwd(),    "Coursera-SwiftKey/final/en_US/en_US.sample.txt",sep = "/")
 con <- file(sample_data_filename, open = "w")
 writeLines(sample_data,con)
 close(con)
@@ -374,7 +370,7 @@ close(con)
 ### Word Frequencies
 
 - Here, we try to analyze the word frequency.
-- For that, these steps are involved,
+- For that, these following steps are involved,
   1. `Term document matrix` is a mathematical matrix that describe the frequency of terms that occur in a collection of document. A `Term document matrix` of corpus is made.
   2. Using this matrix, it is converted into a data frame, which is more legible to read.
 - Later, we can visualize them using `bar plot` and `word cloud`.
@@ -397,7 +393,7 @@ plot_most_freq_word <- ggplot(
 plot_most_freq_word <- plot_most_freq_word+
   geom_bar(stat = "Identity", fill = "#90EE90" ) + 
   geom_text(aes(label = word_Freq[1:10,]$freq), vjust = -0.20, size=3) + xlab("Words")+ ylab("Word Frequencies")+theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-               axis.text.x = element_text(hjust = 0.5, vjust = 0.5, angle = 45),
+               axis.text.x = element_text( angle = 45, vjust = 1, hjust = 1),
                axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ggtitle("10 Most Frequent Words")+dark_theme_light()
 
 plot_most_freq_word
@@ -420,6 +416,19 @@ suppressWarnings(
 ```
 
 ### Tokenizing and N-Gram Generation
+
+- **Tokenization** is used in NLP, to split paragraphs and sentences into smaller units thatcan be more easily assigned meanings. 
+
+- **N-grams** are defined as the contiguous sequence of n items that can be extracted from a given sample of text or speech.
+
+- The items can be letters, words, or base pairs. The N-grams are collected from a text or speech corpus.
+
+- The smallest n-gram with `n = 1` are called **Unigrams**. Unigrams are simply tokens appearing in the sentences.
+
+- **Bigrams** are n-gram with `n = 2` and **trigrams** are n-gram with `n = 3`.
+
+- Function for these n-gram tokenizers is written with this approach.
+
 ```{r tokenization, message=FALSE, warning=FALSE}
 
 unigram_tokenizer <- function(x){
@@ -437,6 +446,11 @@ trigram_tokenizer <- function(x){
 ```
 
 ### Unigrams
+
+- The unigrams are generated as follows,
+  1. A corpus of unigrams are created.
+  2. Term document matrix of these unigram corpus is created, followed by make it data frame.
+  3. Visualization for these unigrams.
 ```{r unigrams, message=FALSE, warning=FALSE}
 
 # creating term document matrix for the corpus
@@ -465,8 +479,9 @@ unigram_hist <- ggplot(
 ) + geom_bar(stat = "identity", fill = "#37BEB0")+ geom_text(
   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-               axis.text.x = element_text(hjust = 1.0, angle = 45),
-               axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
+               axis.text.x = element_text( angle = 45, hjust = 1.0, vjust = 1),
+               axis.text.y = element_text(hjust = 0.5, vjust = 0.5),
+        )+ ggtitle("20 Most Common Unigrams")+dark_theme_light()
 
 unigram_hist
 
@@ -487,6 +502,12 @@ suppressWarnings(
 ```
 
 ### Bigrams
+
+
+- The bigrams are generated as follows,
+  1. A corpus of bigrams are created.
+  2. Term document matrix of these bigram corpus is created, followed by make it data frame.
+  3. Visualization for these bigrams.
 ```{r bigram, message=FALSE, warning=FALSE}
 
 # creating term document matrix for the corpus
@@ -515,7 +536,7 @@ bigram_hist <- ggplot(
 ) + geom_bar(stat = "identity", fill = "#FFD580")+ geom_text(
   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-               axis.text.x = element_text(hjust = 1.0, angle = 45),
+               axis.text.x = element_text(angle = 45, hjust = 1.0, vjust = 1.0),
                axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common bigrams")+dark_theme_light()
 
 bigram_hist
@@ -539,6 +560,12 @@ suppressWarnings(
 
 
 ### Trigrams
+
+
+- The trigrams are generated as follows,
+  1. A corpus of trigrams are created.
+  2. Term document matrix of these trigram corpus is created, followed by make it data frame.
+  3. Visualization for these trigrams.
 
 ```{r trigrams, message=FALSE, warning=FALSE}
 # creating term document matrix for the corpus
@@ -568,7 +595,7 @@ trigram_hist <- ggplot(
 ) + geom_bar(stat = "identity", fill = "#fff44f")+ geom_text(
   aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
   theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
-               axis.text.x = element_text(hjust = 1.0, angle = 45),
+               axis.text.x = element_text(angle = 45, hjust = 1.0),
                axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common trigrams")+dark_theme_light()
 
 trigram_hist
@@ -590,9 +617,18 @@ suppressWarnings(
 
 ```
 
+### Conclusion and remarks
 
+- All the n-gram tokens have been generated.
+- It would be convenient to perform several test with different sample sizes of the dataset to find a balance between computational costs and accuracy of the results. 
 
+### Next step
 
+1. Build and test different prediction models and evaluate each based on their performance.
+
+2. Make and test any necessary modifications to resolve any issues encountered during modeling.
+
+3. Build, test and deploy a Shiny app with a simple user interface that has acceptable run time and reliably and accurately predicts the next word based on a word or phrase entered by the user.
 
 
 
