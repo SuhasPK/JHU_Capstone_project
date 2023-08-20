@@ -323,7 +323,53 @@ suppressWarnings(
   
   
 )
+####################################################################################################
+# creating term document matrix for the corpus
+trigram_matrix <- TermDocumentMatrix(corpus, control = list(tokenize = trigramTokenizer))
 
+# Eliminating sparse terms for each N-gram and get frequencies of most common n-grams
+
+trigram_matrix_freq <- sort(rowSums(as.matrix(
+  removeSparseTerms(
+    trigram_matrix, 0.999
+  )
+)), decreasing = TRUE)
+
+
+trigram_matrix_freq <- data.frame(
+  word = names(trigram_matrix_freq),
+  freq = trigram_matrix_freq,
+  row.names = NULL
+)
+
+trigram_matrix_freq
+
+# Plotting histogram
+trigram_hist <- ggplot(
+  trigram_matrix_freq[1:20,],
+  aes(x = reorder(word, -freq), y = freq)
+) + geom_bar(stat = "identity", fill = "#fff44f")+ geom_text(
+  aes(label = freq), vjust = -0.20, size = 3) + xlab("Words") + ylab("Frequency")+
+  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = 0.5),
+        axis.text.x = element_text(hjust = 1.0, angle = 45),
+        axis.text.y = element_text(hjust = 0.5, vjust = 0.5))+ ggtitle("20 Most Common trigrams")+dark_theme_light()
+
+trigram_hist
+
+# Word cloud
+suppressWarnings(
+  wordcloud(
+    words = trigram_matrix_freq$word,
+    freq = trigram_matrix_freq$freq,
+    min.freq = 1,
+    max.words = 100,
+    random.order = FALSE,
+    rot.per = 0.35,
+    colors = brewer.pal(10, "Dark2")
+  ) 
+  
+  
+)
 
 
 

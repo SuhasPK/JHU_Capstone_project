@@ -36,6 +36,7 @@ together. This involves cleaning and analysisng text data, building and sampling
 - [CRAN Task View: Natural Language Processing](https://cran.r-project.org/web/views/NaturalLanguageProcessing.html)
 - [NLP slides](https://web.stanford.edu/~jurafsky/NLPCourseraSlides.html)
 -[NLP Wiki](https://en.wikipedia.org/wiki/Natural_language_processing)
+- [Reference help](https://rpubs.com/OracleJavaNet/coursera-data-science-milestone-report)
 
 ### Course datasets
 
@@ -45,8 +46,14 @@ This is the training dataset that I will be using for the basic exercises of thi
 
 ## Game Plan 
 
-The libraries used are `knitr, stringi,NLP,tm,RWeka,SnowballC, data.table, wordcloud, ggplot2, kableExtra, gridExtra, ggdark, and RColorBrewer`.
-### Libraries
+### Libraries and usage.
+
+- The libraries used in no particular order are `knitr, stringi, NLP, tm, RWeka, SnowballC, data.table, wordcloud, ggplot2, kableExtra, gridExtra, ggdark, and RColorBrewer`.
+- To install and load a library, say `ggplot2`, this approach can be used, <\br>
+`if(!require(ggplot2)){
+  install.packages("ggplot2")
+  library(ggplot2)
+}`
 
 ```{r libraries, message=FALSE, echo=FALSE, warning=FALSE}
 if(!require(knitr)){
@@ -105,6 +112,11 @@ if(!require(RColorBrewer)){
 
 ### Importing the datasets.
 
+- The data sets can be downloaded and unzipped directly in the code chunk. But as I had already downloaded them. 
+
+- Once the data set zip file is downloaded, unzip it. A folder `Coursera-SwiftKey` will be there, which contains all the text data which has been collected from twitter, news and blogs.
+
+- Here is the code to import the data.
 ```{r import datasets,message=FALSE}
 
 # Read Blog lines
@@ -136,6 +148,18 @@ close(twitter)
 
 ### General statistics on 'Words per line (wpl)'
 
+- Once the data sets are imported, let us apply some general statistics to it.
+
+- In this let us answer these basic questions.
+  1. What is the file size of each data set in MB?
+  2. In each data sets how many number of lines are there?
+  3. How many words are there in each data set?
+
+- Apart from these explorations, let us look into data sets with a more statistical approach.
+
+- One such idea is **Words per line (wpl)**. WPL describes on an average how many words will be there in a sentence/line. 
+
+- Here is the code chunk.
 ```{r wpl, message=FALSE}
 
 # number of lines 
@@ -174,7 +198,17 @@ gist %>% kbl() %>%  kable_styling(bootstrap_options = c("condensed", "responsive
 
 ```
 
+#### Results table and interpretations
 
+From the result table these are some insights,
+
+1. Data set `en_US.twitter.txt` has larger file size (319 MB). 
+
+2. Number of line are more in the twitter data set that blogs data set, because usually tweets are always in 3-5 lines.
+
+3. Even though the file size of `en_US.twitter.txt (319 MB)`  is more compared to `en_US.blogs.txt (255.4 MB)`, maximum words per line is less in `en_US.twitter.txt` than `en_US.blogs.txt`. This means that in usually in tweets/lines, there are less words than in blogs.
+
+#### Visualization of `wpl`.
 
 ```{r wpl_histogram, message=FALSE, warning=FALSE}
 plot1 <- qplot(wpl[[1]],
@@ -208,6 +242,14 @@ rm(plot1, plot2, plot3)
 ```
 
 ### Sampling and cleaning.
+
+- Now that I have all three data sets, I will take sample of these data sets.
+
+- Now I start to clean the data. Cleaning data should involve : 
+  1. Removing all non-English characters from the sample data.
+  2. Combining all three sample data sets into a single data set and writing to disk.
+  3. Calculating `number of lines` and `number of words` in the sample data set.
+
 ```{r sampling and cleaning, message=FALSE}
 set.seed(660067)
 
@@ -237,17 +279,36 @@ close(con)
 sample_data_lines <- length(sample_data)
 sample_data_words <- sum(stri_count_words(sample_data))
 sample_data_lines
-
+sample_data_words
 
 ```
 
 ### Profanity dataset.
 
-- For **profanity check** I downloaded a .csv file from **Kaggle** [Profanities in English](https://www.kaggle.com/datasets/konradb/profanities-in-english-collection). 
-- The downloaded data set is in csv format. So I changed it to a text format so all data set are in same format.
+- Thanks to twitter, usage of profane words are more. So naturally, sample data set will have profane words.
+- These profane words need to be removed.
+- For **profanity check** I have downloaded a .csv file from **Kaggle** [Profanities in English](https://www.kaggle.com/datasets/konradb/profanities-in-english-collection). 
+- The downloaded data set is in csv format. So I have changed it to a text format so all data sets are in same format.
 - It is saved as 'en_US.profanity.txt' .
 
 ### Building Corpus
+
+- **Corpus** : a collection of written texts, especially the entire works of a particular author or a body of writing on a particular subject.
+
+- Based on the sample data set, we need to create a corpus. In this corpus, this should contain words only.
+
+- So, all the following cleaning must be done,
+  1. Removing URL, Twitter handle, and email patterns.
+  2. Removing profane words.
+  3. Converting Latin to ASCII formats.
+  4. Converting words to lower cases.
+  5. Removing stop words.
+  6. Removing punctuation marks.
+  7. Removing white spaces.
+  8. Removing plain text document.
+
+- After cleaning the corpus, it is converted to a data frame and the lines/words are written to disk.
+
 
 ```{r corpus, message=FALSE, warning=FALSE}
 
@@ -309,10 +370,15 @@ con <- file(corpus_filename, open = "w")
 writeLines(corpus_text$text,con)
 close(con)
 
-
-
 ```
 ### Word Frequencies
+
+- Here, we try to analyze the word frequency.
+- For that, these steps are involved,
+  1. `Term document matrix` is a mathematical matrix that describe the frequency of terms that occur in a collection of document. A `Term document matrix` of corpus is made.
+  2. Using this matrix, it is converted into a data frame, which is more legible to read.
+- Later, we can visualize them using `bar plot` and `word cloud`.
+- Note: this corpus is created using our sample data.
 
 ```{r word frequency, message=FALSE, warning=FALSE}
 
