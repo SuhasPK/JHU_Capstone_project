@@ -301,6 +301,15 @@ bigramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
 trigramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
 
 
+unigramMatrix <- TermDocumentMatrix(corpus, control = list(tokenize = unigramTokenizer))
+
+# eliminate sparse terms for each n-gram and get frequencies of most common n-grams
+unigramMatrixFreq <- sort(rowSums(as.matrix(removeSparseTerms(unigramMatrix, 0.999))), decreasing = TRUE)
+unigramMatrixFreq <- data.frame(word = names(unigramMatrixFreq), freq = unigramMatrixFreq, row.names = NULL)
+View(unigramMatrixFreq)
+
+
+
 bigramMatrix <- TermDocumentMatrix(corpus, control = list(tokenize = bigramTokenizer))
 
 # eliminate sparse terms for each n-gram and get frequencies of most common n-grams
