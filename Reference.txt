@@ -1,0 +1,8 @@
+SlNo	Understanding level(1-5, 1 being not understandable)  				url
+1.			5	 							https://rstudio-pubs-static.s3.amazonaws.com/588350_44eaace5507a45d2944549944559da1f.html
+2. 			3								https://github.com/cojamalo/DATA-JHU-Capstone-Text-Prediction
+3. 			3								https://www.pluralsight.com/guides/machine-learning-text-data-using-r
+4. 			3								https://smltar.com/mlregression#firstmlregression
+5. 			3								https://github.com/sachinrajsharma/Next-Word-Predictor-NLP-Project-in-R-Programminga
+6. 			5								https://rpubs.com/Nov05/461099
+7. 			5								https://rpubs.com/Nov05/460803
