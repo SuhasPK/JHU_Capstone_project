@@ -6,3 +6,4 @@ SlNo	Understanding level(1-5, 1 being not understandable)  				url
 5. 			3								https://github.com/sachinrajsharma/Next-Word-Predictor-NLP-Project-in-R-Programminga
 6. 			5								https://rpubs.com/Nov05/461099
 7. 			5								https://rpubs.com/Nov05/460803
+8.			5								https://rpubs.com/cwerneck/378902 **
