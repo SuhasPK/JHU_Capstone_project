@@ -174,6 +174,9 @@ q10_result
 
 
 
+
+
+
 if(!require(knitr)){
   install.packages("knitr")
   library(knitr)
@@ -377,8 +380,15 @@ df
 
 head(df[grep("^case ", df$ngrams),])
 head(df[grep("^mean the ", df$ngrams),])
+########################################################################################################
+
+rbind(df[grep("^and i'd give", df[,1]),],
+      df[grep("^and i'd sleep", df[,1]),],
+      df[grep("^and i'd eat", df[,1]),],
+      df[grep("^and i'd die", df[,1]),])
 
 
+  
 
 
 

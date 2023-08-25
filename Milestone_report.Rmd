@@ -350,7 +350,6 @@ build_corpus <- function(dataset){
 }
 
 # Building corpus and writing to disk
-
 corpus <- build_corpus(sample_data)
 saveRDS(corpus, file = paste(
   getwd(),"Coursera-SwiftKey/final/en_US/en_US.corpus.rds", sep = "/"
