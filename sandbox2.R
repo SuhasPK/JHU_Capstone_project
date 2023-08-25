@@ -61,6 +61,7 @@ build_corpus <- function(dataset){
 
 word_sample_corpus <- build_corpus(word_sample)
 
+
 # 4. N-gram tokenization function.
 
 unigram_tokenizer <- function(x){
