@@ -8,12 +8,20 @@
 #
 
 library(shiny)
+library(tokenizers)
+library(tm)
+library(stringi)
+library(stringr)
+library(ngramr)
+library(NLP)
+library(RWeka)
+library(SnowballC)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Text Predictor DS Capstone"),
+  titlePanel("NLP Bi-gram text prediction app: DS capstone project"),
   
   # Sidebar with a slider input for number of bins
   sidebarLayout(
