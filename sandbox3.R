@@ -1,4 +1,13 @@
 library(tokenizers)
+library(tm)
+library(stringi)
+library(stringr)
+library(ngramr)
+library(NLP)
+library(RWeka)
+library(SnowballC)
+
+
 
 word_sample <- readLines(
   paste(getwd(),
@@ -99,8 +108,10 @@ predict_next_word <- function(input_word, ngram_list) {
   }
 }
 
-n <-2 # Choose the n-gram order (e.g., 2 for bigrams)
-ngram_list <- generate_ngrams(corpus_words, n)
+ # Choose the n-gram order (e.g., 2 for bigrams)
+unigram_list <- generate_ngrams(corpus_words, 1)
+bigram_list <- generate_ngrams(corpus_words, 2)
+trigram_list <- generate_ngrams(corpus_words, 3)
 
 ngram_list
 

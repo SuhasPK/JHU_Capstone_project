@@ -53,7 +53,7 @@ love/hate
 grep("biostats", twitter_lines, value = TRUE)
 
 # 6.
-grep("A computer once beat me at chess, but it was no match for me at kickboxing", twitter_lines)
+grep("hutchback", twitter_lines, value = TRUE)
 
 
 

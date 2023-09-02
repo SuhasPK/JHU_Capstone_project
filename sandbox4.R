@@ -13,6 +13,8 @@ read_and_process_text <- function(file_path) {
   corpus <- tm_map(corpus, removeNumbers)
   corpus <- tm_map(corpus, PlainTextDocument)
   Corpus(VectorSource(corpus))
+  lines_as_vectors <- sapply(lines, as.character)
+  
 }
 
 # Function to create a document-term matrix and count words
@@ -26,7 +28,7 @@ create_dtm_and_count_words <- function(corpus) {
 }
 
 # Function to predict next words based on user input
-predict_next_word <- function(input_word, lines, next_word_pattern) {
+predict_next_word <- function(input_word, lines_as_vector, next_word_pattern) {
   matching_lines <- lines[grepl(input_word, lines, ignore.case = TRUE)]
   initial_chars <- str_extract(matching_lines, next_word_pattern)
   next_words <- stri_extract_last_words(initial_chars)
