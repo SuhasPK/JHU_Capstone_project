@@ -203,7 +203,7 @@ From the result table these are some insights,
 
 2. Number of line are more in the twitter data set that blogs data set, because usually tweets are always in 3-5 lines.
 
-3. Even though the file size of `en_US.twitter.txt (319 MB)`  is more compared to `en_US.blogs.txt (255.4 MB)`, maximum words per line is less in `en_US.twitter.txt` than `en_US.blogs.txt`. This means that in usually in tweets/lines, there are less words than in blogs.
+3. Even though the file size of `en_US.twitter.txt (319 MB)`  is more compared to `en_US.blogs.txt (255.4 MB)`, maximum words per line is less in `en_US.twitter.txt` than `en_US.blogs.txt`. This means that usually in tweets/lines, there are less words than in blogs.
 
 #### Visualization of `wpl`.
 
@@ -286,7 +286,29 @@ sample_data_words
 - These profane words need to be removed.
 - For **profanity check** I have downloaded a .csv file from **Kaggle** [Profanities in English](https://www.kaggle.com/datasets/konradb/profanities-in-english-collection). 
 - The downloaded data set is in csv format. So I have changed it to a text format so all data sets are in same format.
-- It is saved as 'en_US.profanity.txt' .
+- To convert the .csv file to .txt file, the code is given below.
+- It will be saved as 'en_US.profanity.txt' .
+
+```
+pf <- read.csv("profanity_en.csv")
+
+head(pf)
+
+library(readr)
+
+profanity_words <- pf$text
+text_file_path <- paste(
+  getwd(),"Coursera-SwiftKey/final/en_US/en_US.profanity.txt",sep = "/"
+)
+
+con <- file(text_file_path,open = "w")
+writeLines(profanity_words,con)
+close(con)
+
+rm(profanity_words)
+```
+
+
 
 ### Building Corpus
 
@@ -345,6 +367,8 @@ build_corpus <- function(dataset){
   docs <- tm_map(docs, stripWhitespace)
   # Removing Plain text document
   docs <- tm_map(docs, PlainTextDocument)
+  # Removing numbers.
+  docs <- tm_map(docs, removeNumbers)
   
   return(docs)
 }
@@ -367,6 +391,9 @@ writeLines(corpus_text$text,con)
 close(con)
 
 ```
+
+
+
 ### Word Frequencies
 
 - Here, we try to analyze the word frequency.
@@ -561,7 +588,6 @@ suppressWarnings(
 
 ### Trigrams
 
-
 - The trigrams are generated as follows,
   1. A corpus of trigrams are created.
   2. Term document matrix of these trigram corpus is created, followed by make it data frame.
@@ -585,7 +611,6 @@ trigram_matrix_freq <- data.frame(
   freq = trigram_matrix_freq,
   row.names = NULL
 )
-
 
 
 # Plotting histogram
