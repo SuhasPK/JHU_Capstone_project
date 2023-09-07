@@ -113,10 +113,11 @@ unigram_list <- generate_ngrams(corpus_words, 1)
 bigram_list <- generate_ngrams(corpus_words, 2)
 trigram_list <- generate_ngrams(corpus_words, 3)
 
-ngram_list
+
+
 
 input_word <- readline("Enter a word for next word prediction: ")
-predicted_next_word <- predict_next_word(input_word, ngram_list)
+predicted_next_word <- predict_next_word(input_word, trigram_list)
 
 if (!is.null(predicted_next_word)) {
   cat("Predicted next word:", predicted_next_word, "\n")

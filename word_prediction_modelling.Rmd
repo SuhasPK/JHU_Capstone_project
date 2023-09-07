@@ -1,0 +1,280 @@
+---
+title: "Word prediction modelling"
+subtitle: "An introduction to Natural Language Processing Model"
+author: "Suhas. P. K"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    default_style: "dark"
+    downcute_theme: "chaos"
+    toc : 5
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## Introduction
+
+NLP, short, for Natural Language Processing is a branch of intelligence (AI) that deals with the way computers and human languages interact. Its primary objective is to create algorithms and models that enable computers to comprehend interpret and produce language. NLP covers a range of tasks such as analyzing text determining sentiments translating languages and developing chat bots. It plays a role in applications like assistants, language translation services and text analysis tools. As a result NLP is crucial, for tasks involving understanding and generating language.
+
+## Previous work 
+
+- From JHU Data Science Specialization course, this project is part of Capstone project. The [Milestone report](https://rpubs.com/suhasPK/NLP-Mlilestone-project) explains, given the dataset by [Coursera-SwiftKey](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip), the text data from news, blogs and twitter is cleaned from url, twitter handles, email pattern, profane words, numbers, punctuation, white spaces and stop words. 
+- A 1% of the clean data is taken as sample data. This sample is cleaned again, and a corpus is made out of this clean sample data.
+- Optionally, this clean sample data is saved as `en_US.corpus.txt`. 
+- Ngram tokenization makes sure to break the corpus into unigrams, bigrams and trigrams. 
+- A bar plot and word cloud describes the ngram token words and the word frequency respectively.
+
+## Building a simple prediction model.
+
+- Now that a corpus is built, I have build a simple algorithm that searches for ngrams in a list with the given input word and predicts the next word based on the assumption that the first matching ngram is a reasonable continuation. It's a simple approach to word prediction based on the statistical occurrence of ngrams in the corpus data.
+
+### Importing the data set. 
+
+The list of libraries used, `tokenizers, tm, stringi, stringr, ngramr, NLP, RWeka, SnowballC `.
+
+```{r libraries, message=FALSE, echo=FALSE, warning=FALSE}
+if(!require(knitr)){
+  install.packages("knitr")
+  library(knitr)
+}
+if(!require(ngramr)){
+  install.packages("ngramr")
+  library(ngramr)
+}
+if(!require(tokenizers)){
+  install.packages("tokenizers")
+  library(tokenizers)
+}
+if(!require(stringr)){
+  install.packages("stringr")
+  library(stringr)
+}
+if(!require(stringi)){
+  install.packages("stringi")
+  library(stringi)
+}
+if(!require(NLP)){
+  install.packages("NLP")
+  library(NLP)
+}
+if(!require(tm)){
+  install.packages("tm")
+  library(tm)
+}
+if(!require(RWeka)){
+  install.packages("RWeka")
+  library(RWeka)
+}
+if(!require(SnowballC)){
+  install.packages("SNowballC")
+  library(SnowballC)
+}
+
+```
+
+
+```{r sample data, warning=FALSE, message=FALSE}
+# Importing sample data
+word_sample <- readLines(
+  paste(getwd(),
+        "Coursera-SwiftKey/final/en_US/en_US.corpus.txt",
+        sep = "/")
+)
+
+```
+
+### Building corpus using custom function.
+
+```{r build corpus, warning=FALSE, message=FALSE}
+
+#Building corpus using custom function
+
+build_corpus <- function(dataset){
+  docs <- VCorpus(VectorSource(dataset))
+  to_space <- content_transformer(
+    function(x,pattern)
+      gsub(pattern, " ",x)
+  )
+  
+  # Removing URL, Twitter handles, email pattern.
+  docs <- tm_map(docs, to_space,"(f|ht)tp(s?)://(.*)[.][a-z]+")
+  docs <- tm_map(docs, to_space,"@[^\\s]+")
+  docs <- tm_map(docs, to_space, "\\b[A-Z a-z 0-9._ - ]*[@](.*?)[.]{1,3} \\b")
+  
+  # Removing Profane words from the sample data. 
+  
+  con <- file(
+    paste(getwd(),'Coursera-SwiftKey/final/en_US/en_US.profanity.txt',sep = "/"),
+    "r"
+  )
+  profanity <-readLines(
+    con, warn = FALSE, encoding = "UTF-8", skipNul = TRUE
+  )
+  close(con)
+  
+  profanity <- iconv(profanity, "latin1", "ASCII", sub = "")
+  docs <- tm_map(docs, removeWords,profanity)
+  
+  # Converting the words to lower case.
+  docs <- tm_map(docs, tolower)
+  # Removing stopwords.
+  docs <- tm_map(docs, removeWords, stopwords("english"))
+  # Removing punctuation marks.
+  docs <- tm_map(docs, removePunctuation)
+  # Removing white spaces.
+  docs <- tm_map(docs, stripWhitespace)
+  # Removing Plain text document
+  docs <- tm_map(docs, PlainTextDocument)
+  # Removing numbers.
+  docs <- tm_map(docs, removeNumbers)
+  
+  return(docs)
+}
+
+```
+#### Data set of Profane words.
+
+- For **profanity check** I have downloaded a .csv file from **Kaggle** [Profanities in English](https://www.kaggle.com/datasets/konradb/profanities-in-english-collection).
+- The downloaded data set is in csv format. So I have changed it to a text format so all data sets are in same format.
+- To convert the .csv file to .txt file, the code is given below.
+- It will be saved as 'en_US.profanity.txt' .
+
+```
+pf <- read.csv("profanity_en.csv")
+
+head(pf)
+
+library(readr)
+
+profanity_words <- pf$text
+text_file_path <- paste(
+  getwd(),"Coursera-SwiftKey/final/en_US/en_US.profanity.txt",sep = "/"
+)
+
+con <- file(text_file_path,open = "w")
+writeLines(profanity_words,con)
+close(con)
+
+rm(profanity_words)
+```
+
+### Building a corpus based on the word sample.
+
+```{r sample corpus, warning=FALSE, message=FALSE}
+
+word_sample_corpus <- build_corpus(word_sample)
+
+corpus_text <- data.frame(text = unlist(
+  sapply(word_sample_corpus, '[', "content")), stringsAsFactors = FALSE
+)
+
+corpus_filename <- paste(getwd(),"Coursera-SwiftKey/final/en_US/en_US.Mycorpus.txt",sep = "/")
+con <- file(corpus_filename, open = "w")
+writeLines(corpus_text$text,con)
+close(con)
+
+
+corpus_path <- paste(
+  getwd(),"Coursera-SwiftKey/final/en_US/en_US.Mycorpus.txt",
+  sep = "/"
+)
+
+corpus_text <- tolower(
+  readLines(corpus_path, warn = FALSE)
+)
+
+corpus_words <- unlist(tokenize_words(
+  corpus_text
+))
+```
+
+### Function to generate N-gram tokens.
+
+```{r ngram token, warning=FALSE, message=FALSE}
+
+# list of n-grams
+
+generate_ngrams <- function(text, n) {
+  ngram_list <- list()
+  for (i in 1:(length(text) - n + 1)) {
+    ngram <- paste(text[i:(i + n - 1)], collapse = " ")
+    ngram_list <- append(ngram_list, ngram)
+  }
+  return(ngram_list)
+}
+
+# generating tokens
+
+unigram_list <- generate_ngrams(corpus_words, 1)
+bigram_list <- generate_ngrams(corpus_words, 2)
+trigram_list <- generate_ngrams(corpus_words, 3)
+
+```
+
+### Function for text prediction.
+
+- This type of word prediction is often referred to as "n-gram language modeling."
+
+```{r text prediction, warning=FALSE, message=FALSE}
+
+predict_next_word <- function(input_word, ngram_list) {
+  input_word <- tolower(input_word)
+  matching_ngrams <- grep(paste("^", input_word, sep = ""), ngram_list, value = TRUE)
+  if (length(matching_ngrams) > 0) {
+    next_ngram <- matching_ngrams[1]
+    next_word <- strsplit(next_ngram, " ")[[1]][length(input_word) + 1]
+    return(next_word)
+  } else {
+    return(NULL)
+  }
+}
+```
+
+#### Explanation of `predict_next_word()`
+
+Here's an explanation of each step within the predict_next_word function:
+
+1.    `input_word <- tolower(input_word)`: This line converts the input word to lowercase. This step ensures that the input is treated in a case-insensitive manner, as the ngram_list likely contains lowercase words.
+
+2.    `matching_ngrams <- grep(paste("^", input_word, sep = ""), ngram_list, value = TRUE)`: This line searches for ngrams in the ngram_list that start with the given input_word. It uses the grep function with the pattern "^" + input_word, which matches ngrams that start with the input_word. The value = TRUE argument returns the matching ngrams as a character vector.
+
+3.    `if (length(matching_ngrams) > 0) { ... } else { ... }`: This conditional block checks if there are any matching ngrams. If there are matches, it proceeds to the next steps; otherwise, it returns NULL as there is no prediction available.
+
+4.    `next_ngram <- matching_ngrams[1]`: If there are matching ngrams, this line selects the first (or top) matching ngram. It assumes that the first matching ngram is a likely continuation of the input_word.
+
+5. `next_word <- strsplit(next_ngram, " ")[[1]][length(input_word) + 1]`: This line splits the next_ngram into individual words, represented as a character vector. It then extracts the word that comes immediately after the input_word. This extracted word is considered the predicted next word.
+
+### Word prediction experiment
+
+- The input word to test the prediction function is `lime `, the expected output is `juice`.  
+
+```{r input word prediction, warning=FALSE,warning=FALSE}
+
+input_word <- "lime"
+
+predicted_word <- predict_next_word(input_word, bigram_list)
+
+if (!is.null(predicted_word)) {
+  cat("Predicted next word:", predicted_word, "\n")
+} else {
+  cat("No prediction available\n")
+}
+
+```
+
+### Summary 
+
+To put it simply this algorithm looks for groups of words in a list that begin with the provided input word and guesses the word by assuming that the first matching group is a continuation. This is a method of predicting words based on how certain groups of words appear in the data we have. However sophisticated models, for natural language processing like language models such, as LSTM or Transformer based models are frequently utilized to make more precise predictions that take into account the context.
+
+
+
+
+
+
+
+
